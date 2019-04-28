@@ -14,7 +14,7 @@ key = "TOP END_OF_TEXT_UNIT"
 ############################################################################
 # 1. [10 points] From the SnapshotBROWN.pos.all.txt file extract all
 # word types and their frequencies. Sort the list of word types in 
-	# decreasing order based on their frequency. Draw a chart showing the
+# decreasing order based on their frequency. Draw a chart showing the
 #relationship between the rank in the ordered list and the frequency
 #(Zipf's Law). Do not stem but do ignore punctuation.
 ############################################################################
@@ -57,7 +57,7 @@ new_worddict ={}
 sorted_d = sorted(word_dict, key=word_dict.get, reverse=True)
 for w in sorted_d:
 	new_worddict[w] = word_dict[w]
-# print(new_worddict)
+print(new_worddict)
 
 
 ##### Draw a chart showing the relationship between the rank in the ordered list and the frequency
@@ -72,10 +72,11 @@ for w, count in Counter(new_worddict).most_common(20):
 	i = i + 1
 	freq.append(count)
 
-# Draw chart(Zipf's Law)
-# plt.xticks(idx, word)
-# plt.plot(idx, freq)
-# plt.show()
+### Draw chart(Zipf's Law)
+fig = plt.figure()
+plt.xticks(idx, word)
+plt.plot(idx, freq)
+fig.savefig('zipf law of word distribution.png')
 
 
 ############################################################################
@@ -83,13 +84,24 @@ for w, count in Counter(new_worddict).most_common(20):
 #    add-one smoothing. Show the grammar before and after smoothing for
 #    the sentence "A similar resolution passed in the Senate".
 ############################################################################
-def bigram_nlk(s):
+def bigram_nlk(word_list):
+	word1 = []
+	previous = 'EMPTY'
+	for word in word_list:
+	    if previous is'EMPTY':
+	        ## insert word_boundaries at beginning of corpus,and after end-of-sentence markers (
+	        word1.append('*start*')
+	    else:
+	    	word1.append(word)
+	    previous = "Test"
+	word1.append('*end*') ## one additional *start_end* at the end of corpus
+	s = ' '.join(word1)
 	tokens = [token for token in s.split(" ") if token != ""]
 	bigram = list(ngrams(tokens, 2))
 	return bigram
 
 ###Without add-one smoothing
-def without_sm(bigram):
+def without_sm(unigram, bigram):
 	distinct_list = []
 	for g in bigram:
 		if g not in distinct_list:
@@ -102,7 +114,7 @@ def without_sm(bigram):
 		if word in new_worddict.keys():
 			prob = float(count_bigram/new_worddict[word])
 		else:
-			prob = float(count_bigram/1.0)
+			prob = float(1.0/len(unigram)) #back off to unigram probability
 		prob = int(prob * 10000) / 10000.0
 		prob_dict[w] = prob
 	return prob_dict
@@ -120,37 +132,51 @@ def with_sm(unigram, bigram):
 		if word in new_worddict.keys():
 			prob = float((count_bigram+1)/(new_worddict[word]+len(unigram)))
 		else:
-			prob = float((count_bigram+1)/(1+len(unigram)))
+			prob = float(1.0/len(unigram)) #back off to unigram probability
 
 		prob = int(prob * 10000) / 10000.0
 		prob_dict_smooth[w] = prob
 
 	return prob_dict_smooth
 
-s = ' '.join(word_list)
-bigram = bigram_nlk(s)
-prob_withoutsm = without_sm(bigram)
-print(prob_withoutsm)
+###multiply the probability of all bigrams in the sentence
+def multiply_prob(prob):
+    out = 1
+    for p in prob.values():
+        out *= p
+    return(out)
 
+
+#### Generate a Bigram Grammar from the SnapshotBrown file, and add-one smoothing
 unigram = []
 for w in word_list:
 	if w not in unigram:
 		unigram.append(w)
+bigram = bigram_nlk(word_list)
+prob_withoutsm = without_sm(unigram, bigram)
+print(prob_withoutsm)
+
 prob_withsm = with_sm(unigram, bigram)
 print(prob_withsm)
 
 ###Example: "A similar resolution passed in the Senate".
 sentence = "A similar resolution passed in the Senate"
 new_s = sentence.lower()
+new_words = new_s.split(" ")
 
-bigram_output = bigram_nlk(new_s)
+bigram_output = bigram_nlk(new_words)
 print(bigram_output)
 
+
+###multiply the probability of the sentence
+
 ###before smoothing
-test_prob_without = without_sm(bigram_output)
-print(test_prob_without)
+test_prob_without = without_sm(unigram, bigram_output)
+probability1 = multiply_prob(test_prob_without)
+print('Total Probability before smoothing: ',float('%.3g' % probability1))
 
 ###after smoothing
 test_prob_with = with_sm(unigram, bigram_output)
-print(test_prob_with)
+probability2 = multiply_prob(test_prob_with)
+print('Total Probability after smoothing: ',float('%.3g' % probability2))
 
