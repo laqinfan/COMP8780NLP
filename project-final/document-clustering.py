@@ -173,15 +173,6 @@ elif sys.argv[1] == 'Hierarchical' or sys.argv[1] == 'hr':
     image = Image.open('hr.png')
     image.show()
 
-    # var = input("Please input the number of clusters: ")
-
-    # cluster = AgglomerativeClustering(n_clusters=int(var), affinity='euclidean', linkage='ward')  
-    # cluster.fit_predict(distance)
-    # plt.figure(figsize=(10, 7))  
-    # plt.scatter(distance[:,0], distance[:,1], c=cluster.labels_, cmap='rainbow') 
-    # plt.savefig('hr-plot.png', dpi=200) #save figure as hr.png
-    # image = Image.open('hr-plot.png')
-    # image.show() 
 elif sys.argv[1] == 'lda':
     #### Topic modeling for clustering
     dictionary = corpora.Dictionary(tokenized_doc)

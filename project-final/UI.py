@@ -10,7 +10,7 @@ from sklearn.linear_model import LinearRegression, Lasso, Ridge, ElasticNet, SGD
 from sklearn.decomposition import PCA
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.svm import LinearSVR
-import pandas
+import pandas as pd
 import numpy as np
 from sklearn.model_selection import cross_val_score,ShuffleSplit
 from sklearn.cross_validation import train_test_split
@@ -19,6 +19,7 @@ import matplotlib.pyplot as plt
 from io import BytesIO
 import base64
 from plotly.tools import mpl_to_plotly
+from sklearn.manifold import TSNE
 
 import numpy as np 
 import pandas, os, sys, umap
@@ -103,27 +104,16 @@ app.layout = html.Div(children=[
     html.Div(children = [ html.P(f'Enter Number of Clusters', style={'margin-left': '3px'}), dcc.Input(id='text-input1', value='', type='number')
     	], style={'width': '30%',}),
 
-	html.Div(html.H3(f'Cluster Output:', style={'margin-left': '3px'}),id='model_output'),
+    html.Div(children=[html.H3(f'Cluster Output:: ', style={'margin-left': '3px'}),],
+        # Step 5
+        style={'width': '48%'},
+    ),
 
-	html.Button('Show cluster figure', id='button', style={'display': 'inline-block'}),
-	html.Img(id='image-id'),
+	html.Div(id='model_output'),
+
+	html.Div('   ',style={'display': 'inline-block'}),
 
 ])
-@app.callback(
-	Output("image-id", "src"),
-	[Input(component_id='dropdown-model', component_property='value'),
-	 Input('button', 'n_clicks')])
-def update_graph(model_value, n_clicks):
-	if n_clicks:
-		if model_value == 'kmeans-no-lsa':
-			image = 'km-no-lsa.png'
-			src=app.get_asset_url(image)
-		elif model_value == 'kmeans-lsa':
-			image = 'lsa.png'
-			src=app.get_asset_url(image)
-		else:
-			src = None
-		return src
 
 @app.callback(
 	Output(component_id='score_output', component_property='children'),
